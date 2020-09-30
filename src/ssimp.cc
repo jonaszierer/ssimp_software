@@ -860,117 +860,117 @@ int main(int argc, char **argv) {
             }
         }
 
-        auto database_of_builds = ssimp:: load_database_of_builds();
-        std:: map<int, size_t> database_of_builds_rs_to_offset;
-        for(size_t offset = 0; offset < database_of_builds.size(); ++offset) {
-            ssimp:: IDchrmThreePos const db_entry = database_of_builds.at(offset);
-            database_of_builds_rs_to_offset.insert( std:: make_pair(db_entry.rs, offset) );
-        }
-        assert(database_of_builds.size() == database_of_builds_rs_to_offset.size());
-        cout << "  Loaded.\n";
+        // auto database_of_builds = ssimp:: load_database_of_builds();
+        // std:: map<int, size_t> database_of_builds_rs_to_offset;
+        // for(size_t offset = 0; offset < database_of_builds.size(); ++offset) {
+        //     ssimp:: IDchrmThreePos const db_entry = database_of_builds.at(offset);
+        //     database_of_builds_rs_to_offset.insert( std:: make_pair(db_entry.rs, offset) );
+        // }
+        // assert(database_of_builds.size() == database_of_builds_rs_to_offset.size());
+        // cout << "  Loaded.\n";
 
-        ssimp:: which_build_t which_build_ref   = ssimp:: estimate_build_of_reference_panel(options:: opt_raw_ref, database_of_builds);
-        ssimp:: which_build_t which_build_gwas  = ssimp:: estimate_build_of_the_gwas(gwas, database_of_builds);
+        ssimp:: which_build_t which_build_ref   = ssimp:: which_build_t:: hg19_1;
+        ssimp:: which_build_t which_build_gwas  = ssimp:: which_build_t:: hg19_1;
 
         PP(which_build_gwas, which_build_ref);
 
         assert(which_build_ref != ssimp:: which_build_t:: unknown);
 
-        if(which_build_gwas == ssimp:: which_build_t:: unknown) {
-            // let's copy in as much as we can from the database into the gwas.
-            // We only have the rs-number to go on though.
-            for(int i = 0; i<gwas->number_of_snps(); ++i ) {
-                // first, clear out any position already assigned. We
-                // don't know the build, so we can't really trust them.
-                gwas->set_chrpos(i, chrpos{-1,-1});
-            }
-            for(int i = 0; i<gwas->number_of_snps(); ++i ) {
-		try {
-		    auto   gwas_rs      =   gwas->get_SNPname(i);
-		    if(gwas_rs.substr(0,2) == "rs") {
-			int gwas_rs_int = utils:: lexical_cast<int>(gwas_rs.substr(2));
-			//PP(gwas_rs, gwas_rs_int);
-			if(1==database_of_builds_rs_to_offset.count(gwas_rs_int)) {
-			    auto offset_into_big_db = database_of_builds_rs_to_offset[gwas_rs_int];
-			    assert(database_of_builds.at(offset_into_big_db).rs == gwas_rs_int);
-			    chrpos new_chrpos = get_one_build(database_of_builds.at(offset_into_big_db), which_build_ref);
-			    if (new_chrpos.pos == -1) {
-				// we can't do anything here, as we don't know its position.
-				// This is a SNP which is known in at least one build (hence
-				// it's in the database), but it's not known in the desired
-				// build
-			    } else {
-				assert(new_chrpos != (chrpos{-1,0}));
-				gwas->set_chrpos(i, new_chrpos);
-			    }
-			} else {
-			    // not in the database - should we delete it?
-			    // TODO: decide whether to delete or now
-			}
-		    }
-		} catch (...) {
-		    std::cerr << "Error in the GWAS file, while reading line " << gwas->get_line_number(i) << ".\n";
-		    throw;
-		}
-            }
-            for(int i = 0; i<gwas->number_of_snps(); ++i ) { assert(gwas->get_chrpos(i) != (chrpos{-1,0}) ); }
-            which_build_gwas = which_build_ref; // we've changed the gwas positions, so we here record that fact
-        }
+        // if(which_build_gwas == ssimp:: which_build_t:: unknown) {
+        //     // let's copy in as much as we can from the database into the gwas.
+        //     // We only have the rs-number to go on though.
+        //     for(int i = 0; i<gwas->number_of_snps(); ++i ) {
+        //         // first, clear out any position already assigned. We
+        //         // don't know the build, so we can't really trust them.
+        //         gwas->set_chrpos(i, chrpos{-1,-1});
+        //     }
+        //     for(int i = 0; i<gwas->number_of_snps(); ++i ) {
+	// 	try {
+	// 	    auto   gwas_rs      =   gwas->get_SNPname(i);
+	// 	    if(gwas_rs.substr(0,2) == "rs") {
+	// 		int gwas_rs_int = utils:: lexical_cast<int>(gwas_rs.substr(2));
+	// 		//PP(gwas_rs, gwas_rs_int);
+	// 		if(1==database_of_builds_rs_to_offset.count(gwas_rs_int)) {
+	// 		    auto offset_into_big_db = database_of_builds_rs_to_offset[gwas_rs_int];
+	// 		    assert(database_of_builds.at(offset_into_big_db).rs == gwas_rs_int);
+	// 		    chrpos new_chrpos = get_one_build(database_of_builds.at(offset_into_big_db), which_build_ref);
+	// 		    if (new_chrpos.pos == -1) {
+	// 			// we can't do anything here, as we don't know its position.
+	// 			// This is a SNP which is known in at least one build (hence
+	// 			// it's in the database), but it's not known in the desired
+	// 			// build
+	// 		    } else {
+	// 			assert(new_chrpos != (chrpos{-1,0}));
+	// 			gwas->set_chrpos(i, new_chrpos);
+	// 		    }
+	// 		} else {
+	// 		    // not in the database - should we delete it?
+	// 		    // TODO: decide whether to delete or now
+	// 		}
+	// 	    }
+	// 	} catch (...) {
+	// 	    std::cerr << "Error in the GWAS file, while reading line " << gwas->get_line_number(i) << ".\n";
+	// 	    throw;
+	// 	}
+        //     }
+        //     for(int i = 0; i<gwas->number_of_snps(); ++i ) { assert(gwas->get_chrpos(i) != (chrpos{-1,0}) ); }
+        //     which_build_gwas = which_build_ref; // we've changed the gwas positions, so we here record that fact
+        // }
 
-        if(which_build_ref != which_build_gwas) {
-            // This is the 'awkward' one
-            cout << "builds are different. Need to adjust the positions in the GWAS to match those in the ref panel\n";
-            assert(which_build_gwas != ssimp:: which_build_t:: unknown);
-            std:: map< chrpos, int > gwas_old_build_to_new; // for only the positions in the gwas
-            for(int i = 0; i<gwas->number_of_snps(); ++i ) {
-                auto crps = gwas->get_chrpos(i);
-                if(crps != chrpos{-1,-1}) {
-                    gwas_old_build_to_new[crps] = -1; // we don't yet know the position, so we just make this placeholder first
-                }
-            }
-            PP(gwas_old_build_to_new.size());
-            for(auto && db_entry : database_of_builds) {
-                auto under_gwas = get_one_build( db_entry, which_build_gwas);
-                if(gwas_old_build_to_new.count( under_gwas ) == 1) {
-                    auto under_ref = get_one_build( db_entry, which_build_ref);
-                    if      (   gwas_old_build_to_new[under_gwas] == -1
-                             || gwas_old_build_to_new[under_gwas] == under_ref.pos
-                            ){}
-                    else {
-                        PP  (   under_gwas, under_ref
-                            ,   gwas_old_build_to_new[under_gwas]
-                            );
-                    }
-                    assert  (   gwas_old_build_to_new[under_gwas] == -1
-                             || gwas_old_build_to_new[under_gwas] == under_ref.pos
-                            );
-                    assert(under_ref != (chrpos{-1,-1}));
-                    assert(under_ref.chr == under_gwas.chr);
-                    gwas_old_build_to_new[under_gwas] = under_ref.pos;
-                }
-            }
+        // if(which_build_ref != which_build_gwas) {
+        //     // This is the 'awkward' one
+        //     cout << "builds are different. Need to adjust the positions in the GWAS to match those in the ref panel\n";
+        //     assert(which_build_gwas != ssimp:: which_build_t:: unknown);
+        //     std:: map< chrpos, int > gwas_old_build_to_new; // for only the positions in the gwas
+        //     for(int i = 0; i<gwas->number_of_snps(); ++i ) {
+        //         auto crps = gwas->get_chrpos(i);
+        //         if(crps != chrpos{-1,-1}) {
+        //             gwas_old_build_to_new[crps] = -1; // we don't yet know the position, so we just make this placeholder first
+        //         }
+        //     }
+        //     PP(gwas_old_build_to_new.size());
+        //     for(auto && db_entry : database_of_builds) {
+        //         auto under_gwas = get_one_build( db_entry, which_build_gwas);
+        //         if(gwas_old_build_to_new.count( under_gwas ) == 1) {
+        //             auto under_ref = get_one_build( db_entry, which_build_ref);
+        //             if      (   gwas_old_build_to_new[under_gwas] == -1
+        //                      || gwas_old_build_to_new[under_gwas] == under_ref.pos
+        //                     ){}
+        //             else {
+        //                 PP  (   under_gwas, under_ref
+        //                     ,   gwas_old_build_to_new[under_gwas]
+        //                     );
+        //             }
+        //             assert  (   gwas_old_build_to_new[under_gwas] == -1
+        //                      || gwas_old_build_to_new[under_gwas] == under_ref.pos
+        //                     );
+        //             assert(under_ref != (chrpos{-1,-1}));
+        //             assert(under_ref.chr == under_gwas.chr);
+        //             gwas_old_build_to_new[under_gwas] = under_ref.pos;
+        //         }
+        //     }
 
-            // now to apply those adjustments to the gwas
-            for(int i = 0; i<gwas->number_of_snps(); ++i ) {
-                auto crps = gwas->get_chrpos(i);
-                if(crps != chrpos{-1,-1}) {
-                    // we must either delete, or update, this gwas entry.
-                    // Can't leave the gwas as a mixture of builds
-                    if  (   gwas_old_build_to_new.count(crps)   == 1
-                         && gwas_old_build_to_new[crps]         != -1
-                        ) {
-                        auto newpos = gwas_old_build_to_new[crps];
-                        assert(newpos != -1);
-                        crps.pos = newpos;
-                        gwas->set_chrpos(i, crps);
-                    }
-                    else {
-                        gwas->set_chrpos(i, chrpos{-1,-1});
-                    }
-                }
-            }
-            which_build_gwas = which_build_ref;
-        }
+        //     // now to apply those adjustments to the gwas
+        //     for(int i = 0; i<gwas->number_of_snps(); ++i ) {
+        //         auto crps = gwas->get_chrpos(i);
+        //         if(crps != chrpos{-1,-1}) {
+        //             // we must either delete, or update, this gwas entry.
+        //             // Can't leave the gwas as a mixture of builds
+        //             if  (   gwas_old_build_to_new.count(crps)   == 1
+        //                  && gwas_old_build_to_new[crps]         != -1
+        //                 ) {
+        //                 auto newpos = gwas_old_build_to_new[crps];
+        //                 assert(newpos != -1);
+        //                 crps.pos = newpos;
+        //                 gwas->set_chrpos(i, crps);
+        //             }
+        //             else {
+        //                 gwas->set_chrpos(i, chrpos{-1,-1});
+        //             }
+        //         }
+        //     }
+        //     which_build_gwas = which_build_ref;
+        // }
 
         assert(which_build_ref == which_build_gwas);
 
